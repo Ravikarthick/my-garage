@@ -1,4 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+const fs = require('fs');
+
+const clean = `import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface SeriesItem { label: string; group: string; }
 
@@ -149,3 +151,7 @@ export async function getCustomSeries(): Promise<SeriesItem[]> {
     return list.map((label: string) => ({ label, group: 'My Custom Series' }));
   } catch(e) { return []; }
 }
+`;
+
+fs.writeFileSync('lib/seriesData.ts', clean);
+console.log('✅ seriesData.ts completely rewritten - clean, no duplicates!');

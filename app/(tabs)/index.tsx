@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, useColorScheme, StatusBar } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, useColorScheme, StatusBar, Modal, ScrollView } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { loadCars, Car } from '../../lib/storage';
@@ -10,6 +10,11 @@ export default function GarageScreen() {
   const [search, setSearch] = useState('');
   const [brand, setBrand] = useState('all');
   const [thOnly, setThOnly] = useState(false);
+  const [filterMfg, setFilterMfg] = useState('');
+  const [filterSeries, setFilterSeries] = useState('');
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const allMfgs = Array.from(new Set(cars.map(c => c.manufacturer).filter(Boolean))).sort();
+  const allSeries = Array.from(new Set(cars.map(c => c.series).filter(Boolean))).sort();
   const router = useRouter();
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
@@ -29,6 +34,8 @@ export default function GarageScreen() {
     return list.filter(c => {
       if (brand !== 'all' && c.brand !== brand) return false;
       if (thOnly && c.th === 'none') return false;
+    if (filterMfg && c.manufacturer !== filterMfg) return false;
+    if (filterSeries && c.series !== filterSeries) return false;
       if (q && ![c.name, c.series, c.color, c.colnum, c.manufacturer].filter(Boolean).join(' ').toLowerCase().includes(q)) return false;
       return true;
     });
@@ -47,7 +54,14 @@ export default function GarageScreen() {
       <View style={[s.header, { backgroundColor: card, borderBottomColor: border }]}>
         <View style={s.titleRow}>
           <Text style={[s.title, { color: text }]}>MY <Text style={{ color: '#D85A30' }}>GARAGE</Text></Text>
-          <TouchableOpacity style={s.addBtn} onPress={() => router.push({ pathname: '/car/[id]', params: { id: 'add' } })}>
+          <TouchableOpacity
+          style={[s.addBtn, { backgroundColor: (filterMfg || filterSeries) ? '#D85A30' : (dark ? '#2C2C2E' : '#F0EFEC'), marginRight: 6 }]}
+          onPress={() => setShowFilterSheet(true)}
+        >
+          <Ionicons name="options-outline" size={18} color={(filterMfg || filterSeries) ? '#fff' : text} />
+          {(filterMfg || filterSeries) && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>ON</Text>}
+        </TouchableOpacity>
+        <TouchableOpacity style={s.addBtn} onPress={() => router.push({ pathname: '/car/[id]', params: { id: 'add' } })}>
             <Ionicons name="add" size={18} color="#fff" />
             <Text style={s.addBtnTxt}>Add Car</Text>
           </TouchableOpacity>
@@ -136,6 +150,59 @@ export default function GarageScreen() {
             : <CarCard car={item} onPress={() => router.push({ pathname: '/car/[id]', params: { id: item.id } })} />
         }
       />
+
+      {/* FILTER SHEET */}
+      <Modal visible={showFilterSheet} transparent animationType="slide">
+        <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} activeOpacity={1} onPress={() => setShowFilterSheet(false)} />
+        <View style={{ backgroundColor: card, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 40, maxHeight: '80%' }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#E0DEDA', alignSelf: 'center', marginVertical: 12 }} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: text }}>Filter Collection</Text>
+            <TouchableOpacity onPress={() => { setFilterMfg(''); setFilterSeries(''); setShowFilterSheet(false); }}>
+              <Text style={{ color: '#D85A30', fontWeight: '600' }}>Clear All</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+            {/* Manufacturer filter */}
+            <Text style={{ fontSize: 12, fontWeight: '700', color: muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>Manufacturer</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {allMfgs.map(m => (
+                <TouchableOpacity
+                  key={m}
+                  style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, backgroundColor: filterMfg === m ? '#D85A30' : (dark ? '#2C2C2E' : '#F5F4F1'), borderColor: filterMfg === m ? '#D85A30' : '#E0DEDA' }}
+                  onPress={() => setFilterMfg(filterMfg === m ? '' : m)}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: filterMfg === m ? '#fff' : text }}>{m}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Series filter */}
+            <Text style={{ fontSize: 12, fontWeight: '700', color: muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>Series</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {allSeries.map(s => (
+                <TouchableOpacity
+                  key={s}
+                  style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, backgroundColor: filterSeries === s ? '#185FA5' : (dark ? '#2C2C2E' : '#F5F4F1'), borderColor: filterSeries === s ? '#185FA5' : '#E0DEDA' }}
+                  onPress={() => setFilterSeries(filterSeries === s ? '' : s)}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: filterSeries === s ? '#fff' : text }}>{s}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={{ backgroundColor: '#D85A30', borderRadius: 12, padding: 14, alignItems: 'center' }}
+              onPress={() => setShowFilterSheet(false)}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                Show {filtered.length} Cars
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

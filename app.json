@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.ravkar.mygarage",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "101"
     },
     "android": {
       "adaptiveIcon": {

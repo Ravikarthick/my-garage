@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, Alert, Share, useColorScheme, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -32,7 +33,7 @@ export default function BackupScreen() {
 
   async function importData() {
     try {
-      const Clipboard = require('expo-clipboard');
+      // Clipboard imported at top
       const text = await Clipboard.getStringAsync();
       if (!text || !text.includes('"cars"')) { Alert.alert('Error', 'Copy your backup text first.'); return; }
       const backup = JSON.parse(text);

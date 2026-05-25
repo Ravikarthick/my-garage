@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+#!/usr/bin/env node
+const fs = require('fs');
+
+fs.writeFileSync('app/car/[id].tsx', `import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, SafeAreaView, Image, Alert, Modal, FlatList,
@@ -179,7 +182,7 @@ export default function CarForm() {
       });
       const data = await resp.json();
       const txt = (data && data.content && data.content[0] && data.content[0].text) || '';
-      const match = txt.match(/\{[^{}]*\}/);
+      const match = txt.match(/\\{[^{}]*\\}/);
       if (match) {
         const p = JSON.parse(match[0]);
         if (p.name) { setName(p.name); const d = detectManufacturer(p.name); if (d) setMfg(d); }
@@ -552,3 +555,28 @@ const s = StyleSheet.create({
   numChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1.5, backgroundColor: '#F5F4F1', borderColor: '#E0DEDA' },
   numChipT: { fontSize: 13, fontWeight: '600', color: '#1A1A18' },
 });
+`);
+
+console.log('✅ app/car/[id].tsx - complete clean rewrite done!');
+console.log('');
+console.log('Features included:');
+console.log('  ✅ Brand picker');
+console.log('  ✅ Car name + auto-suggest + history');
+console.log('  ✅ Scan Card (AI OCR)');
+console.log('  ✅ Manufacturer auto-detect + picker');
+console.log('  ✅ Series picker + custom series (saves to AsyncStorage)');
+console.log('  ✅ Year');
+console.log('  ✅ Color dropdown');
+console.log('  ✅ Series # picker');
+console.log('  ✅ Mainline # picker (1-250)');
+console.log('  ✅ Tampo');
+console.log('  ✅ Treasure Hunt');
+console.log('  ✅ Photo (camera + library)');
+console.log('  ✅ Status');
+console.log('  ✅ Notes');
+console.log('  ✅ Delete');
+console.log('');
+console.log('Now in Xcode:');
+console.log('  Product → Clean Build Folder (Shift+Cmd+K)');
+console.log('  Product → Archive');
+console.log('  Distribute → TestFlight Internal Only');
