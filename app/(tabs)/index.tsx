@@ -54,6 +54,7 @@ export default function GarageScreen() {
       <View style={[s.header, { backgroundColor: card, borderBottomColor: border }]}>
         <View style={s.titleRow}>
           <Text style={[s.title, { color: text }]}>MY <Text style={{ color: '#D85A30' }}>GARAGE</Text></Text>
+          <TouchableOpacity style={[s.addBtn, { backgroundColor: dark ? "#2C2C2E" : "#F0EFEC", marginRight: 6 }]} onPress={() => router.push("/backup")}><Ionicons name="cloud-upload-outline" size={18} color={text} /></TouchableOpacity>
           <TouchableOpacity
           style={[s.addBtn, { backgroundColor: (filterMfg || filterSeries) ? '#D85A30' : (dark ? '#2C2C2E' : '#F0EFEC'), marginRight: 6 }]}
           onPress={() => setShowFilterSheet(true)}
