@@ -15,11 +15,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ravkar.mygarage",
-      "buildNumber": "102",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "101"
+      "buildNumber": "110"
     },
     "android": {
       "adaptiveIcon": {
