@@ -92,9 +92,7 @@ export default function GalleryScreen() {
             {c.status === 'dup'  && <View style={[st.badge, { backgroundColor: '#8B1A1A' }]}><Text style={st.badgeTxt}>2× Dupe</Text></View>}
           </View>
           <Text style={st.carName} numberOfLines={2}>{c.name}</Text>
-          {!!c.manufacturer && (
-            <Text style={[st.makerName, { color: c.brand === 'hw' ? '#FF9060' : '#78B4FF' }]} numberOfLines={1}>{c.manufacturer}</Text>
-          )}
+          <Text style={[st.makerName, { color: c.brand === 'hw' ? '#FF9060' : '#78B4FF' }]} numberOfLines={1}>{[c.manufacturer, c.series].filter(Boolean).join('  •  ') || (c.brand === 'hw' ? 'Hot Wheels' : 'Matchbox')}</Text>
         </View>
 
         {/* ── ZONE 3: PHOTO ──────────────────────────────────────────── */}

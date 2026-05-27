@@ -137,8 +137,8 @@ export default function CarForm() {
     const r = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1,1], quality: 0.8 });
     if (!r.canceled) {
       try {
-        const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG });
-        setPhoto(compressed.uri);
+        const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+        setPhoto('data:image/jpeg;base64,' + compressed.base64);
       } catch(e) { setPhoto(r.assets[0].uri); }
     }
   }
@@ -147,8 +147,8 @@ export default function CarForm() {
     const r = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1,1], quality: 0.8 });
     if (!r.canceled) {
       try {
-        const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.85, format: ImageManipulator.SaveFormat.JPEG });
-        setPhoto(compressed.uri);
+        const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+        setPhoto('data:image/jpeg;base64,' + compressed.base64);
       } catch(e) { setPhoto(r.assets[0].uri); }
     }
   }
@@ -293,11 +293,15 @@ export default function CarForm() {
 
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 4 }}>
             <View style={{ flex: 2 }}>
-              <Text style={s.lbl}>Series</Text>
-              <TouchableOpacity style={s.fieldBtn} onPress={() => setModal('series')}>
-                <Text style={[s.fieldVal, !series && { color: '#A0A09C' }, { flex: 1 }]} numberOfLines={1}>{series || 'Select...'}</Text>
-                <Ionicons name="chevron-down" size={14} color="#A0A09C" />
-              </TouchableOpacity>
+              <Text style={s.lbl}>{brand === 'mb' ? 'MBX # (1-125)' : 'Series'}</Text>
+              {brand === 'mb' ? (
+                <TextInput style={[s.fieldBtn, { paddingVertical: 11 }]} value={series} onChangeText={t => setSeries(t.replace(/[^0-9/]/g, ''))} placeholder="47/125" placeholderTextColor="#A0A09C" keyboardType="numeric" maxLength={7} />
+              ) : (
+                <TouchableOpacity style={s.fieldBtn} onPress={() => setModal('series')}>
+                  <Text style={[s.fieldVal, !series && { color: '#A0A09C' }, { flex: 1 }]} numberOfLines={1}>{series || 'Select...'}</Text>
+                  <Ionicons name="chevron-down" size={14} color="#A0A09C" />
+                </TouchableOpacity>
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.lbl}>Year</Text>
