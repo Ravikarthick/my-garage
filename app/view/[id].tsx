@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Image, TouchableOpacity, SafeAreaView, useColor
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { loadCars, deleteCar, Car } from '../../lib/storage';
+import PhotoFrame from '../../components/PhotoFrame';
 
 export default function CarViewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -78,7 +79,7 @@ export default function CarViewScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
         <View style={{ backgroundColor: CARD, borderRadius: 18, overflow: 'hidden', marginBottom: 14, borderWidth: 0.5, borderColor: BORDER }}>
           {car.photo ? (
-            <Image source={{ uri: car.photo }} style={{ width: '100%', aspectRatio: 1, backgroundColor: '#000' }} resizeMode="cover" />
+            <PhotoFrame uri={car.photo} brand={car.brand} />
           ) : (
             <View style={{ width: '100%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: dark ? '#0A0A0A' : '#F0EFEC' }}>
               <Text style={{ fontSize: 90 }}>{isHW ? '🔥' : '🚙'}</Text>

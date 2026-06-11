@@ -137,7 +137,7 @@ export default function CarForm() {
   async function takePhoto() {
     const { status: s } = await ImagePicker.requestCameraPermissionsAsync();
     if (s !== 'granted') { Alert.alert('Camera permission needed'); return; }
-    const r = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1,1], quality: 0.8 });
+    const r = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 });
     if (!r.canceled) {
       try {
         const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true });
@@ -147,7 +147,7 @@ export default function CarForm() {
   }
 
   async function pickPhoto() {
-    const r = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1,1], quality: 0.8 });
+    const r = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
     if (!r.canceled) {
       try {
         const compressed = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true });
