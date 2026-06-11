@@ -20,7 +20,7 @@ export default function CarCard({ car, onPress }:{ car:Car; onPress:()=>void }) 
           </View>
           {car.th==='th'&&<View style={[s.tag,s.tagTH]}><Text style={[s.tagT,s.tagTHT]}>TH</Text></View>}
           {car.th==='sth'&&<View style={[s.tag,s.tagSTH]}><Text style={[s.tagT,s.tagSTHT]}>Super TH</Text></View>}
-          {car.status==='dup'&&<View style={[s.tag,s.tagDup]}><Text style={[s.tagT,s.tagDupT]}>Dupe</Text></View>}
+          {car.status==='dup'&&<View style={[s.tag,s.tagDup]}><Text style={[s.tagT,s.tagDupT]}>{car.dupCount||2}× Dupe</Text></View>}
           {!!car.colnum&&<View style={[s.tag,s.tagCol]}><Text style={[s.tagT,s.tagColT]}>#{car.colnum}</Text></View>}
         </View>
       </View>

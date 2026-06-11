@@ -4,7 +4,7 @@ export interface Car {
   id:string; brand:'hw'|'mb'; name:string; manufacturer:string;
   series:string; year:string; color:string; colnum:string; mainline:string;
   tampo:string; notes:string; th:'none'|'th'|'sth';
-  status:'owned'|'wish'|'dup'; photo:string|null; added:number;
+  status:'owned'|'wish'|'dup'; photo:string|null; dupCount?:number; added:number;
 }
 export const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 export const loadCars = async (): Promise<Car[]> => {

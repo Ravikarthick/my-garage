@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -46,6 +47,7 @@ export default function CarForm() {
   const [notes, setNotes]       = useState('');
   const [th, setTh]             = useState('none');
   const [status, setStatus]     = useState('owned');
+  const [dupCount, setDupCount] = useState(2);
   const [photo, setPhoto]       = useState(null);
   const [saving, setSaving]     = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -80,6 +82,7 @@ export default function CarForm() {
         setNotes(c.notes || '');
         setTh(c.th || 'none');
         setStatus(c.status || 'owned');
+        setDupCount(c.dupCount || 2);
         setPhoto(c.photo || null);
       });
     }
@@ -114,7 +117,7 @@ export default function CarForm() {
         series: series.trim(), year: year.trim(), color: color.trim(),
         colnum: colnum.trim(), mainline: mainline.trim(),
         tampo: tampo.trim(), notes: notes.trim(),
-        th, status, photo,
+        th, status, photo, dupCount: status === 'dup' ? dupCount : undefined,
         added: isEdit ? (cars.find(c => c.id === id)?.added || Date.now()) : Date.now()
       };
       if (isEdit) await updateCar(car); else await addCar(car);
@@ -165,30 +168,52 @@ export default function CarForm() {
         const c = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 800 } }], { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true });
         base64 = c.base64;
       } catch(e) {}
+      const apiKey = (Constants.expoConfig && Constants.expoConfig.extra && Constants.expoConfig.extra.anthropicApiKey) || '';
+      if (!apiKey) { Alert.alert('Setup needed', 'No API key found. Add it to secrets.json and reload.'); setOcrLoading(false); return; }
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 150,
+          model: 'claude-sonnet-4-5-20250929',
+          max_tokens: 600,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-            { type: 'text', text: 'Hot Wheels or Matchbox card. Find the car name. Reply ONLY with JSON: {"name":"car name","series":"or empty","year":"4 digits or empty","colnum":"like 4/5 or empty"}' }
+            { type: 'text', text: 'This is a Hot Wheels or Matchbox die-cast car package/card. Read all visible text and identify the details. Reply ONLY with a JSON object, no other text, using exactly these keys: {"brand":"hw or mb","name":"the car/casting name","manufacturer":"real automaker like Nissan or empty","series":"series/collection name or empty","year":"4-digit year or empty","color":"main body color or empty","colnum":"collector number like 4/5 or empty","mainline":"toy number like 32/250 or empty","tampo":"notable graphics/decals or empty","th":"none, th, or sth (super treasure hunt)"}. Use empty string for anything you cannot read. For brand use hw for Hot Wheels, mb for Matchbox.' }
           ]}]
         })
       });
       const data = await resp.json();
-      const txt = (data && data.content && data.content[0] && data.content[0].text) || '';
-      const match = txt.match(/\{[^{}]*\}/);
-      if (match) {
-        const p = JSON.parse(match[0]);
-        if (p.name) { setName(p.name); const d = detectManufacturer(p.name); if (d) setMfg(d); }
+      if (data && data.error) { Alert.alert('Scan error', (data.error.type || '') + ': ' + (data.error.message || 'unknown')); setOcrLoading(false); return; }
+      let txt = (data && data.content && data.content[0] && data.content[0].text) || '';
+      txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
+      let p = null;
+      try {
+        const a = txt.indexOf('{'); const b = txt.lastIndexOf('}');
+        if (a !== -1 && b !== -1) p = JSON.parse(txt.slice(a, b + 1));
+      } catch (e) { p = null; }
+      if (p && (p.name || p.manufacturer)) {
+        if (p.brand === 'hw' || p.brand === 'mb') setBrand(p.brand);
+        if (p.name) { setName(p.name); }
+        if (p.manufacturer) setMfg(p.manufacturer);
+        else if (p.name) { const d = detectManufacturer(p.name); if (d) setMfg(d); }
         if (p.series) setSeries(p.series);
         if (p.year) setYear(p.year);
+        if (p.color) setColor(p.color);
         if (p.colnum) setColnum(p.colnum);
-        Alert.alert('Done!', 'Check fields and adjust if needed.');
+        if (p.mainline) setMainline(p.mainline);
+        if (p.tampo) setTampo(p.tampo);
+        if (p.th === 'th' || p.th === 'sth') setTh(p.th);
+        try {
+          const big = await ImageManipulator.manipulateAsync(r.assets[0].uri, [{ resize: { width: 600 } }], { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+          setPhoto('data:image/jpeg;base64,' + big.base64);
+        } catch (e) {}
+        Alert.alert('Scanned!', 'Fields filled in. Review and tap Save.');
       } else {
-        Alert.alert('Could not read card', 'Try better lighting.');
+        Alert.alert('Could not read card', 'Try a clearer photo of the card front.');
       }
     } catch(e) {
       Alert.alert('Could not read card', 'Try better lighting.');
@@ -363,8 +388,19 @@ export default function CarForm() {
           <View style={[s.row, { marginBottom: 14 }]}>
             <Chip label="✓ I own it" active={status==='owned'} onPress={() => setStatus('owned')} ac="#EAF3DE" tc="#3B6D11" />
             <Chip label="♡ Wishlist" active={status==='wish'} onPress={() => setStatus('wish')} ac="#E6F1FB" tc="#0C447C" />
-            <Chip label="2× Duplicate" active={status==='dup'} onPress={() => setStatus('dup')} ac="#FCEBEB" tc="#A32D2D" />
+            <Chip label={`${dupCount}\u00d7 Duplicate`} active={status==='dup'} onPress={() => setStatus('dup')} ac="#FCEBEB" tc="#A32D2D" />
           </View>
+          {status === 'dup' && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 14, marginTop: -6 }}>
+              <TouchableOpacity onPress={() => setDupCount(Math.max(2, dupCount - 1))} style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 1.5, borderColor: '#A32D2D', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 20, color: '#A32D2D', fontWeight: '700', lineHeight: 22 }}>{'\u2212'}</Text>
+              </TouchableOpacity>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#A32D2D', minWidth: 100, textAlign: 'center' }}>{dupCount}{'\u00d7'} Duplicate</Text>
+              <TouchableOpacity onPress={() => setDupCount(Math.min(99, dupCount + 1))} style={{ width: 38, height: 38, borderRadius: 19, borderWidth: 1.5, borderColor: '#A32D2D', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 20, color: '#A32D2D', fontWeight: '700', lineHeight: 22 }}>+</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <Text style={s.lbl}>Notes</Text>
           <TextInput style={[s.fieldBtn, { height: 80, textAlignVertical: 'top', paddingTop: 11, marginBottom: 10 }]} value={notes} onChangeText={setNotes} placeholder="Where you got it, price, condition..." placeholderTextColor="#A0A09C" multiline />

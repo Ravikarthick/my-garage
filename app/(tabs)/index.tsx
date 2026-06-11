@@ -148,7 +148,7 @@ export default function GarageScreen() {
         renderItem={({ item }) =>
           item.type === 'header'
             ? <Text style={[s.sec, { color: hint }]}>WISHLIST</Text>
-            : <CarCard car={item} onPress={() => router.push({ pathname: '/car/[id]', params: { id: item.id } })} />
+            : <CarCard car={item} onPress={() => router.push({ pathname: '/view/[id]', params: { id: item.id } })} />
         }
       />
 

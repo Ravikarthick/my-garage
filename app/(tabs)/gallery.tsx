@@ -89,7 +89,7 @@ export default function GalleryScreen() {
             {c.th === 'sth' && <View style={[st.badge, { backgroundColor: '#BA7517' }]}><Text style={st.badgeTxt}>🌟 Super TH</Text></View>}
             {c.th === 'th'  && <View style={[st.badge, { backgroundColor: '#3B6D11' }]}><Text style={st.badgeTxt}>⭐ TH</Text></View>}
             {c.status === 'wish' && <View style={[st.badge, { backgroundColor: 'rgba(24,95,165,0.8)' }]}><Text style={st.badgeTxt}>♡ Wishlist</Text></View>}
-            {c.status === 'dup'  && <View style={[st.badge, { backgroundColor: '#8B1A1A' }]}><Text style={st.badgeTxt}>2× Dupe</Text></View>}
+            {c.status === 'dup'  && <View style={[st.badge, { backgroundColor: '#8B1A1A' }]}><Text style={st.badgeTxt}>{c.dupCount||2}× Dupe</Text></View>}
           </View>
           <Text style={st.carName} numberOfLines={2}>{c.name}</Text>
           <Text style={[st.makerName, { color: c.brand === 'hw' ? '#FF9060' : '#78B4FF' }]} numberOfLines={1}>{[c.manufacturer, c.series].filter(Boolean).join('  •  ') || (c.brand === 'hw' ? 'Hot Wheels' : 'Matchbox')}</Text>
