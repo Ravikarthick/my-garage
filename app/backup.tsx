@@ -1,4 +1,6 @@
 import * as Clipboard from 'expo-clipboard';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import * as ImageManipulator from 'expo-image-manipulator';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, Alert, useColorScheme, ScrollView, ActivityIndicator } from 'react-native';
@@ -55,6 +57,50 @@ export default function BackupScreen() {
     } catch (e) { setBusy(false); setStatus('Export failed: ' + (e && e.message ? e.message : String(e))); }
   }
 
+  async function exportToFile() {
+    try {
+      const cars = await loadCars();
+      if (cars.length === 0) { Alert.alert('No data', 'No cars found in this app.'); return; }
+      setBusy(true);
+      setStatus('Packing ' + cars.length + ' cars into a file...');
+      const out = [];
+      let converted = 0, missing = 0;
+      for (const c of cars) {
+        let photo = c.photo;
+        if (photo && !String(photo).startsWith('data:')) {
+          try {
+            const m = await ImageManipulator.manipulateAsync(photo, [{ resize: { width: 600 } }], { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+            photo = 'data:image/jpeg;base64,' + m.base64;
+            converted++;
+          } catch (e) { photo = null; missing++; }
+        }
+        out.push({ ...c, photo });
+      }
+      const backup = { version: 2, date: new Date().toISOString(), total: out.length, cars: out };
+      const path = FileSystem.documentDirectory + 'mygarage-backup.json';
+      await FileSystem.writeAsStringAsync(path, JSON.stringify(backup));
+      setBusy(false);
+      setStatus('File ready with ' + out.length + ' cars (photos embedded: ' + converted + (missing ? ', missing: ' + missing : '') + '). In the share sheet choose "Save to Files".');
+      await Sharing.shareAsync(path, { mimeType: 'application/json' });
+    } catch (e) { setBusy(false); setStatus('File export failed: ' + (e && e.message ? e.message : String(e))); }
+  }
+
+  async function deleteAll() {
+    const cars = await loadCars();
+    Alert.alert('Delete ALL cars?', 'This will permanently remove ' + cars.length + ' cars from this app. Did you save a backup file first?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Continue', style: 'destructive', onPress: () => {
+        Alert.alert('Are you absolutely sure?', 'There is NO undo.', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'DELETE EVERYTHING', style: 'destructive', onPress: async () => {
+            await AsyncStorage.removeItem(KEY);
+            setStatus('All cars deleted. Fresh start!');
+          } },
+        ]);
+      } },
+    ]);
+  }
+
   async function importData() {
     try {
       const text = await Clipboard.getStringAsync();
@@ -92,12 +138,22 @@ export default function BackupScreen() {
           <TouchableOpacity disabled={busy} style={{ backgroundColor: busy ? '#9E9E9E' : '#3B6D11', borderRadius: 12, padding: 14, alignItems: 'center' }} onPress={exportData}>
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Export my cars</Text>
           </TouchableOpacity>
+          <TouchableOpacity disabled={busy} style={{ backgroundColor: busy ? '#9E9E9E' : '#185FA5', borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 10 }} onPress={exportToFile}>
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Export to FILE (best for big collections)</Text>
+          </TouchableOpacity>
         </View>
         <View style={{ backgroundColor: CARD, borderRadius: 16, padding: 18, borderWidth: 0.5, borderColor: BORDER }}>
           <Text style={{ fontSize: 16, fontWeight: '800', color: TEXT, marginBottom: 6 }}>Step 2 - Import (do this in the new app)</Text>
           <Text style={{ fontSize: 13, color: MUTED, marginBottom: 14, lineHeight: 19 }}>Reads the cars you just exported and adds them here.</Text>
           <TouchableOpacity disabled={busy} style={{ backgroundColor: busy ? '#9E9E9E' : '#185FA5', borderRadius: 12, padding: 14, alignItems: 'center' }} onPress={importData}>
             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Import from clipboard</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ backgroundColor: CARD, borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#8B1A1A', marginTop: 10 }}>
+          <Text style={{ fontSize: 16, fontWeight: '800', color: '#FF6B6B', marginBottom: 6 }}>Danger zone</Text>
+          <Text style={{ fontSize: 13, color: MUTED, marginBottom: 14, lineHeight: 19 }}>Deletes every car in this app. Make sure you exported a backup FILE first.</Text>
+          <TouchableOpacity disabled={busy} style={{ borderRadius: 12, padding: 14, alignItems: 'center', borderWidth: 1.5, borderColor: '#C0392B' }} onPress={deleteAll}>
+            <Text style={{ color: '#FF6B6B', fontWeight: '800', fontSize: 15 }}>Delete ALL cars</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

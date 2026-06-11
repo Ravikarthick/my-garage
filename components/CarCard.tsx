@@ -1,19 +1,20 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Car } from '../lib/storage';
 import { C } from '../lib/theme';
 export default function CarCard({ car, onPress }:{ car:Car; onPress:()=>void }) {
+  const dark = useColorScheme() === 'dark';
   const owned = car.status==='owned'||car.status==='dup';
   const sub = [car.series,car.year,car.color].filter(Boolean).join(' · ');
   return (
-    <TouchableOpacity style={[s.card, car.status==='wish'&&s.wish]} onPress={onPress} activeOpacity={0.7}>
-      <View style={s.thumb}>
+    <TouchableOpacity style={[s.card, dark && { backgroundColor: '#1C1C1E', borderColor: '#2C2C2E' }, car.status==='wish'&&s.wish]} onPress={onPress} activeOpacity={0.7}>
+      <View style={[s.thumb, dark && { backgroundColor: '#2C2C2E', borderColor: '#3A3A3C' }]}>
         {car.photo ? <Image source={{uri:car.photo}} style={s.img}/> : <Text style={s.emoji}>{car.brand==='hw'?'🔥':'🚙'}</Text>}
       </View>
       <View style={s.info}>
-        <Text style={s.name} numberOfLines={1}>{car.name||'Unnamed'}</Text>
-        {!!sub && <Text style={s.sub} numberOfLines={1}>{sub}</Text>}
+        <Text style={[s.name, dark && { color: '#F2F2F7' }]} numberOfLines={1}>{car.name||'Unnamed'}</Text>
+        {!!sub && <Text style={[s.sub, dark && { color: '#8E8E93' }]} numberOfLines={1}>{sub}</Text>}
         <View style={s.tags}>
           <View style={[s.tag, car.brand==='hw'?s.tagHW:s.tagMB]}>
             <Text style={[s.tagT, car.brand==='hw'?s.tagHWT:s.tagMBT]}>{car.brand==='hw'?'Hot Wheels':'Matchbox'}</Text>

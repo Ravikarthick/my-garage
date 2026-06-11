@@ -61,7 +61,7 @@ export default function GalleryScreen() {
   function ReelItem({ item: c, index }) {
     const brandCol = c.brand === 'hw' ? '#D85A30' : '#185FA5';
     const TOPBAR_H = Platform.OS === 'ios' ? 96 : 56;   // top bar (grid btn + title + +)
-    const PHOTO_H  = SW * 1.0;                           // photo square-ish
+    const PHOTO_H  = SW * 0.88;                           // photo square-ish
     const INFO_H   = SH - TOPBAR_H - PHOTO_H;           // everything else
 
     return (
@@ -107,7 +107,7 @@ export default function GalleryScreen() {
         }}>
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
             {Array.from({ length: 35 }).map((_, i) => {
-              const EMOJIS = ['🚗','🚙','🏎️','🛻','🚕','🚌','🚓'];
+              const EMOJIS = c.brand === 'hw' ? ['🏎️','🚗','🔥','🛻','🚓','🏁','🚗'] : ['🚙','🚗','🚌','🛻','🚕','🚙','🚗'];
               const col = i % 5;
               const row = Math.floor(i / 5);
               return (

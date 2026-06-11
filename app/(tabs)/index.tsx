@@ -57,7 +57,7 @@ export default function GarageScreen() {
           const col = i % 5;
           const row = Math.floor(i / 5);
           return (
-            <Text key={'w' + i} style={{ position: 'absolute', fontSize: 24, opacity: dark ? 0.10 : 0.08, left: col * 82 + (row % 2 === 0 ? 6 : 40), top: row * 110 + 10, transform: [{ rotate: (((i * 53) % 50) - 25) + 'deg' }] }}>{EMOJIS[i % 7]}</Text>
+            <Text key={'w' + i} style={{ position: 'absolute', fontSize: 24, opacity: dark ? 0.14 : 0.08, left: col * 82 + (row % 2 === 0 ? 6 : 40), top: row * 110 + 10, transform: [{ rotate: (((i * 53) % 50) - 25) + 'deg' }] }}>{EMOJIS[i % 7]}</Text>
           );
         })}
       </View>
