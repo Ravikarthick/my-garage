@@ -73,7 +73,7 @@ export default function GalleryScreen() {
         {/* ── ZONE 2: CAR NAME STRIP — just below top bar ───────────── */}
         <View style={{
           position: 'absolute',
-          top: TOPBAR_H,
+          top: TOPBAR_H + 16,
           left: 0, right: 0,
           paddingHorizontal: 18,
           paddingTop: 10,
@@ -95,41 +95,49 @@ export default function GalleryScreen() {
           <Text style={[st.makerName, { color: c.brand === 'hw' ? '#FF9060' : '#78B4FF' }]} numberOfLines={1}>{[c.manufacturer, c.series].filter(Boolean).join('  •  ') || (c.brand === 'hw' ? 'Hot Wheels' : 'Matchbox')}</Text>
         </View>
 
-        {/* ── ZONE 3: PHOTO ──────────────────────────────────────────── */}
+        {/* ── ZONE 3: PHOTO ────────────────────── */}
         <View style={{
           position: 'absolute',
-          top: TOPBAR_H + 88,   // below name strip
+          top: TOPBAR_H + 138,
           left: 0, right: 0,
           height: PHOTO_H,
-          backgroundColor: '#161616',
+          backgroundColor: c.brand === 'hw' ? '#1A0F08' : '#08111A',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {Array.from({ length: 35 }).map((_, i) => {
+              const EMOJIS = ['🚗','🚙','🏎️','🛻','🚕','🚌','🚓'];
+              const col = i % 5;
+              const row = Math.floor(i / 5);
+              return (
+                <Text key={i} style={{ position: 'absolute', fontSize: 24, opacity: 0.09, left: col * (SW / 5) + (row % 2 === 0 ? 8 : 38), top: row * (PHOTO_H / 7) + 6, transform: [{ rotate: (((i * 53) % 50) - 25) + 'deg' }] }}>{EMOJIS[i % 7]}</Text>
+              );
+            })}
+          </View>
           {c.photo ? (
-            <>
-              <Image source={{ uri: c.photo }} style={StyleSheet.absoluteFill} resizeMode="cover" blurRadius={20} />
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.38)' }]} />
-              <Image source={{ uri: c.photo }} style={{ width: SW - 16, height: PHOTO_H - 16 }} resizeMode="contain" />
-            </>
+            <View style={{ borderWidth: 2, borderColor: brandCol, borderRadius: 18, padding: 5, backgroundColor: 'rgba(255,255,255,0.06)', shadowColor: brandCol, shadowOpacity: 0.8, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } }}>
+              <Image source={{ uri: c.photo }} style={{ width: SW - 64, height: PHOTO_H - 70, borderRadius: 13 }} resizeMode="contain" />
+            </View>
           ) : (
             <Text style={{ fontSize: 90 }}>{c.brand === 'hw' ? '🔥' : '🚙'}</Text>
           )}
-          {/* counter */}
-          <View style={st.counter}>
-            <Text style={st.counterTxt}>{index + 1} / {reelList.length}</Text>
-          </View>
         </View>
 
         {/* ── ZONE 4: INFO PANEL — fills the rest at bottom ─────────── */}
         <View style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
-          top: TOPBAR_H + 88 + PHOTO_H,
+          top: TOPBAR_H + 138 + PHOTO_H,
           backgroundColor: '#0D0D0D',
           paddingHorizontal: 14,
           paddingTop: 14,
           paddingBottom: Platform.OS === 'ios' ? 30 : 16,
         }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 8 }}>
+            <Ionicons name="chevron-up" size={13} color="rgba(255,255,255,0.6)" />
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700' }}>Swipe up for next car</Text>
+          </View>
           {/* Info grid */}
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
             {c.series && (
@@ -154,6 +162,12 @@ export default function GalleryScreen() {
               <View style={[st.infoBox, { flex: 1, minWidth: '28%', backgroundColor: 'rgba(24,95,165,0.25)', borderColor: 'rgba(78,140,220,0.35)' }]}>
                 <Text style={[st.infoLbl, { color: '#5090CC' }]}>COL #</Text>
                 <Text style={[st.infoVal, { color: '#78B4FF' }]}>{c.colnum}</Text>
+              </View>
+            )}
+            {c.mainline && (
+              <View style={[st.infoBox, { flex: 1, minWidth: '28%', backgroundColor: 'rgba(24,95,165,0.25)', borderColor: 'rgba(78,140,220,0.35)' }]}>
+                <Text style={[st.infoLbl, { color: '#5090CC' }]}>MAINLINE</Text>
+                <Text style={[st.infoVal, { color: '#78B4FF' }]}>{c.mainline}</Text>
               </View>
             )}
             {c.tampo && (
@@ -231,13 +245,6 @@ export default function GalleryScreen() {
           renderItem={({ item, index }) => <ReelItem item={item} index={index} />}
         />
 
-        {/* Swipe hint */}
-        {reelList.length > 1 && (
-          <View style={st.swipeHint}>
-            <Ionicons name="chevron-up" size={14} color="rgba(255,255,255,0.25)" />
-            <Text style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>swipe up for next</Text>
-          </View>
-        )}
       </View>
     );
   }

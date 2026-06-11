@@ -19,7 +19,7 @@ export default function GarageScreen() {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
 
-  const bg    = dark ? '#0F0F0F' : '#F2F1EE';
+  const bg    = dark ? '#0F0F0F' : '#D9D3C5';
   const card  = dark ? '#1C1C1E' : '#FFFFFF';
   const text  = dark ? '#F2F2F7' : '#1C1C1E';
   const muted = dark ? '#8E8E93' : '#6B6B6B';
@@ -51,6 +51,16 @@ export default function GarageScreen() {
   return (
     <SafeAreaView style={[s.safe, { backgroundColor: bg }]}>
       <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        {Array.from({ length: 40 }).map((_, i) => {
+          const EMOJIS = ['🚗','🚙','🏎️','🛻','🚕','🚌','🚓'];
+          const col = i % 5;
+          const row = Math.floor(i / 5);
+          return (
+            <Text key={'w' + i} style={{ position: 'absolute', fontSize: 24, opacity: dark ? 0.10 : 0.08, left: col * 82 + (row % 2 === 0 ? 6 : 40), top: row * 110 + 10, transform: [{ rotate: (((i * 53) % 50) - 25) + 'deg' }] }}>{EMOJIS[i % 7]}</Text>
+          );
+        })}
+      </View>
       <View style={[s.header, { backgroundColor: card, borderBottomColor: border }]}>
         <View style={s.titleRow}>
           <Text style={[s.title, { color: text }]}>MY <Text style={{ color: '#D85A30' }}>GARAGE</Text></Text>
